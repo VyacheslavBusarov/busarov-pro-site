@@ -48,6 +48,21 @@ td:first-child,th:first-child{text-align:left;position:sticky;left:0;background:
 .modal .box{background:#fff;border-radius:14px;padding:20px;width:420px}.modal input,.modal textarea{width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;margin:6px 0 12px}
 .hint{font-size:12px;color:var(--mute)}
 svg text{font-size:11px;fill:#6b7487}
+.chartbox{position:relative}
+#chart rect.seg{transition:opacity .18s ease,filter .18s ease;cursor:pointer}
+#chart rect.seg.dim{opacity:.55}
+#chart.hov rect.seg{opacity:.18}
+#chart.hov rect.seg.col{opacity:.5}
+#chart.hov rect.seg.on{opacity:1;filter:drop-shadow(0 2px 6px rgba(20,30,60,.35));stroke:#fff;stroke-width:1.5}
+#chart .tot{font-size:11px;font-weight:700;fill:#1d2433;opacity:0;transition:opacity .18s ease;pointer-events:none}
+#chart .tot.on{opacity:1}
+#chart polyline{pointer-events:none;transition:opacity .18s}#chart.hov polyline{opacity:.35}
+.ctip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(20,30,60,.16);padding:10px 12px;font-size:12px;min-width:230px;opacity:0;transform:translateY(4px);transition:opacity .15s ease,transform .15s ease;z-index:5}
+.ctip.on{opacity:1;transform:none}
+.ctip .h{font-weight:700;font-size:13px;margin-bottom:2px}.ctip .s{color:var(--mute);margin-bottom:6px}
+.ctip .r{display:grid;grid-template-columns:10px 1fr auto 38px;gap:6px;align-items:center;padding:2px 4px;border-radius:5px;color:var(--mute)}
+.ctip .r i{width:10px;height:10px;border-radius:3px;display:block}.ctip .r b{color:var(--ink);font-weight:600;text-align:right}.ctip .r span:last-child{text-align:right}
+.ctip .r.on{background:#f0f3fa;color:var(--ink);font-weight:650}
 @media(max-width:1000px){.kpis{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
 </style></head><body><div class="wrap">
 <header><div><h1>Управленческий баланс · Группа «Маркгрупп» <span class="badge">демо-данные</span><span class="badge" style="background:#e6ecfb;color:#2f5bea">версия 2</span></h1>
@@ -58,7 +73,7 @@ svg text{font-size:11px;fill:#6b7487}
 <div class="kpis" id="kpis" style="margin-top:16px"></div><div class="lg" style="margin-top:8px"><span>Цветная полоса слева у показателя:</span><span><i style="background:#12a150"></i>в норме</span><span><i style="background:#e8a317"></i>внимание</span><span><i style="background:#d43c3c"></i>риск</span><span>без полосы — у показателя нет нормы</span></div>
 
 <div class="grid2">
- <div class="card"><h2>Куда вложены деньги компании</h2><div class="legend" id="legend"></div><svg id="chart" width="100%" height="260"></svg>
+ <div class="card"><h2>Куда вложены деньги компании</h2><div class="legend" id="legend"></div><div class="chartbox"><svg id="chart" width="100%" height="260"></svg><div class="ctip" id="ctip"></div></div>
  <div class="hint">Высота столбца — все активы, пунктир — собственный капитал. Чем больше синего и фиолетового, тем больше денег заморожено у клиентов и в проектах. Нажмите на столбец, чтобы выбрать месяц.</div></div>
  <div class="card"><h2 id="detTitle">Детали</h2><div id="detail"></div></div>
 </div>
@@ -173,12 +188,27 @@ function renderSummary(){const s=sel,z=0,A=tot(s,"A");document.getElementById("s
  const rr=risks(s);document.getElementById("risks").innerHTML=rr.length?rr.sort((a,b)=>a[0]=="bad"?-1:1).map(([c,t])=>`<li class="${c}">${c=="bad"?"🔴":"🟡"} ${t}</li>`).join(""):`<li class="ok">🟢 Существенных рисков в этом месяце не найдено.</li>`}
 function renderChart(){const svg=document.getElementById("chart"),W=svg.clientWidth||560,H=260,pad=34,bw=(W-pad)/N*0.62;
  const ks=["cash","ar","wip","adv_paid","inv","other","fixed"],max=Math.max(...M.map((_,m)=>ks.reduce((s,k)=>s+Math.max(0,v(m,k)),0)))*1.05;
+ const colTot=m=>ks.reduce((s,k)=>s+Math.max(0,v(m,k)),0);
  let h="";for(let i=0;i<=4;i++){const y=H-24-(H-40)*i/4;h+=`<line x1="${pad}" x2="${W}" y1="${y}" y2="${y}" stroke="#eef1f6"/><text x="0" y="${y+4}">${Math.round(max*i/4/1e6)}</text>`}
- M.forEach((_,m)=>{let y=H-24;const x=pad+(W-pad)/N*m+((W-pad)/N-bw)/2;ks.forEach(k=>{const hh=Math.max(0,v(m,k))/max*(H-40);y-=hh;h+=`<rect x="${x}" y="${y}" width="${bw}" height="${hh}" fill="${COLORS[k]}" opacity="${m==sel?1:.55}"><title>${NAMES[k]}: ${fm(v(m,k))}</title></rect>`});
-  h+=`<text x="${x+bw/2}" y="${H-8}" text-anchor="middle" style="font-weight:${m==sel?700:400}">${L[m]}</text><rect x="${x}" y="0" width="${bw}" height="${H-24}" fill="transparent" style="cursor:pointer" onclick="pick(${m})"/>`});
+ M.forEach((_,m)=>{let y=H-24;const x=pad+(W-pad)/N*m+((W-pad)/N-bw)/2;
+  h+=`<rect x="${x}" y="0" width="${bw}" height="${H-24}" fill="transparent" style="cursor:pointer" onclick="pick(${m})"/>`;
+  ks.forEach(k=>{const hh=Math.max(0,v(m,k))/max*(H-40);y-=hh;if(hh>0)h+=`<rect class="seg ${m==sel?'':'dim'}" data-m="${m}" data-k="${k}" x="${x}" y="${y}" width="${bw}" height="${hh}" rx="1.5" fill="${COLORS[k]}" onclick="pick(${m})"/>`});
+  h+=`<text class="tot" data-m="${m}" x="${x+bw/2}" y="${y-6}" text-anchor="middle">${(colTot(m)/1e6).toFixed(1).replace(".",",")}</text>`;
+  h+=`<text x="${x+bw/2}" y="${H-8}" text-anchor="middle" style="font-weight:${m==sel?700:400}">${L[m]}</text>`});
  const ey=m=>H-24-Math.max(0,eqB(m))/max*(H-40);let pts=M.map((_,m)=>`${pad+(W-pad)/N*m+(W-pad)/N/2},${ey(m)}`).join(" ");
  h+=`<polyline points="${pts}" fill="none" stroke="#1d2433" stroke-width="2" stroke-dasharray="4 3"/>`;
- svg.innerHTML=h;document.getElementById("legend").innerHTML=ks.map(k=>`<span><i style="background:${COLORS[k]}"></i>${NAMES[k]}</span>`).join("")+`<span><i style="background:#1d2433;height:2px"></i>Собственный капитал</span>`}
+ svg.innerHTML=h;document.getElementById("legend").innerHTML=ks.map(k=>`<span><i style="background:${COLORS[k]}"></i>${NAMES[k]}</span>`).join("")+`<span><i style="background:#1d2433;height:2px"></i>Собственный капитал</span>`;
+ const tip=document.getElementById("ctip"),box=svg.parentNode;
+ const clear=()=>{svg.classList.remove("hov");svg.querySelectorAll(".on,.col").forEach(e=>e.classList.remove("on","col"));tip.classList.remove("on")};
+ svg.onmouseleave=clear;
+ svg.onmousemove=e=>{const t=e.target;if(!t.classList||!t.classList.contains("seg")){clear();return}
+  const m=+t.dataset.m,k=t.dataset.k,T=colTot(m);
+  if(!t.classList.contains("on")){clear();svg.classList.add("hov");svg.querySelectorAll(`rect.seg[data-m="${m}"]`).forEach(r=>r.classList.add("col"));t.classList.add("on");svg.querySelector(`text.tot[data-m="${m}"]`).classList.add("on");
+   tip.innerHTML=`<div class="h">${L[m]}${m?" 2026":" 2025"}</div><div class="s">Все активы: <b style="color:#1d2433">${fm(T)}</b> · капитал ${fm(eqB(m))}</div>`+
+    ks.slice().reverse().filter(x=>v(m,x)>0).map(x=>`<div class="r ${x==k?'on':''}"><i style="background:${COLORS[x]}"></i><span>${NAMES[x]}</span><b>${fm(v(m,x))}</b><span>${Math.round(v(m,x)/T*100)}%</span></div>`).join("")}
+  const b=box.getBoundingClientRect();let lx=e.clientX-b.left+14,ly=e.clientY-b.top-20;tip.classList.add("on");
+  const tw=tip.offsetWidth||240,th=tip.offsetHeight||180;if(lx+tw>b.width)lx=e.clientX-b.left-tw-14;if(ly+th>b.height+40)ly=b.height+40-th;if(ly<-40)ly=-40;
+  tip.style.left=lx+"px";tip.style.top=ly+"px"}}
 function renderTable(){let h=`<tr><th>млн ₽</th>${L.map((l,i)=>`<th class="${i==sel?'sel':''}">${l}</th>`).join("")}</tr>`;
  const rk=(m,l)=>{if(l=="ar"){const x=R60(m);return x>0.1?"rk-bad":x>0.03?"rk-warn":""}if(l=="cash"){const c=COVER(m);return c==null?"":c<0.5?"rk-bad":c<1?"rk-warn":""}if(l=="debt")return v(m,"debt")>1000&&m>=7?"rk-warn":"";return ""};
  const cell=(m,l)=>{const a=adjSum(m,l);return `<td class="c ${m==sel?'sel':''} ${a?'adj':''} ${rk(m,l)}" onclick="openM(${m},'${l}')" title="${a?'корректировка: '+fmt(a):'нажмите для корректировки'}">${(v(m,l)/1e6).toFixed(2)}</td>`};
