@@ -48,6 +48,11 @@ td:first-child,th:first-child{text-align:left;position:sticky;left:0;background:
 .modal .box{background:#fff;border-radius:14px;padding:20px;width:420px}.modal input,.modal textarea{width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;margin:6px 0 12px}
 .hint{font-size:12px;color:var(--mute)}
 svg text{font-size:11px;fill:#6b7487}
+.info{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1.5px solid #9aa3b5;color:#6b7487;font:italic 700 10px Georgia,serif;margin-left:6px;cursor:help;vertical-align:2px;transition:all .15s}
+.info:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+.ftip{border-bottom:1px dotted #9aa3b5;cursor:help}
+.gtip{position:fixed;z-index:50;max-width:320px;background:#1d2433;color:#fff;font-size:12px;line-height:1.45;padding:8px 11px;border-radius:8px;box-shadow:0 8px 24px rgba(20,30,60,.25);pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s}
+.gtip.on{opacity:1;transform:none}
 .chartbox{position:relative}
 #chart rect.seg{transition:opacity .18s ease,filter .18s ease;cursor:pointer}
 #chart rect.seg.dim{opacity:.55}
@@ -69,27 +74,27 @@ svg text{font-size:11px;fill:#6b7487}
 <div class="sub">ООО «Маркгрупп» + ООО «Супер Винил» (внутригрупповые расчёты исключены) · руб. · на конец месяца</div></div>
 <div class="months" id="months"></div></header>
 
-<div class="card summary"><h2>Главное за месяц <span class="sub" id="sumMonth"></span></h2><ul id="summary"></ul><h2 style="margin-top:16px">🛡️ Риски месяца</h2><div class="hint">Найдены автоматически по правилам ниже (просрочка, концентрация, денежное покрытие, ликвидность, долг). Красный — риск, жёлтый — внимание.</div><ul class="risks" id="risks"></ul></div>
+<div class="card summary"><h2>Главное за месяц <span class="sub" id="sumMonth"></span><span class="info" data-tip="Короткая выжимка для собственника: сколько стоит бизнес, где заморожены деньги, долг, доходность и главный рычаг. Пересчитывается для выбранного месяца.">i</span></h2><ul id="summary"></ul><h2 style="margin-top:16px">🛡️ Риски месяца<span class="info" data-tip="Автоматическая проверка по правилам: просрочка, концентрация должников, денежное покрытие, ликвидность, доля капитала, долг. К каждому риску — что делать.">i</span></h2><div class="hint">Найдены автоматически по правилам ниже (просрочка, концентрация, денежное покрытие, ликвидность, долг). Красный — риск, жёлтый — внимание.</div><ul class="risks" id="risks"></ul></div>
 <div class="kpis" id="kpis" style="margin-top:16px"></div><div class="lg" style="margin-top:8px"><span>Цветная полоса слева у показателя:</span><span><i style="background:#12a150"></i>в норме</span><span><i style="background:#e8a317"></i>внимание</span><span><i style="background:#d43c3c"></i>риск</span><span>без полосы — у показателя нет нормы</span></div>
 
 <div class="grid2">
- <div class="card"><h2>Куда вложены деньги компании</h2><div class="legend" id="legend"></div><div class="chartbox"><svg id="chart" width="100%" height="260"></svg><div class="ctip" id="ctip"></div></div>
+ <div class="card"><h2>Куда вложены деньги компании<span class="info" data-tip="Структура активов по месяцам: во что превратились деньги компании — счета, долги клиентов, проекты в работе, оборудование. Пунктир — собственный капитал.">i</span></h2><div class="legend" id="legend"></div><div class="chartbox"><svg id="chart" width="100%" height="260"></svg><div class="ctip" id="ctip"></div></div>
  <div class="hint">Высота столбца — все активы, пунктир — собственный капитал. Чем больше синего и фиолетового, тем больше денег заморожено у клиентов и в проектах. Нажмите на столбец, чтобы выбрать месяц.</div></div>
  <div class="card"><h2 id="detTitle">Детали</h2><div id="detail"></div></div>
 </div>
 
-<div class="card"><h2>Баланс по месяцам</h2>
+<div class="card"><h2>Баланс по месяцам<span class="info" data-tip="Управленческий баланс группы на конец каждого месяца: активы, обязательства и капитал. Сходится до рубля — см. строку «Проверка». Ячейки можно корректировать.">i</span></h2>
 <div class="hint" style="margin-bottom:8px">Нажмите на <b>название строки</b>, чтобы увидеть расшифровку. Нажмите на <b>ячейку</b>, чтобы внести ручную корректировку. Фиолетовая точка ● означает, что в ячейке есть корректировка.</div><div class="lg" style="margin-bottom:8px"><span><i style="background:#fde2e2"></i>риск: просрочка 60+ дней больше 10% дебиторки; денег меньше половины ближайших обязательств</span><span><i style="background:#fff3cd"></i>внимание: просрочка 3–10%; денег меньше ближайших обязательств; есть непогашенный кредит</span></div>
 <div class="bal"><table id="bal"></table></div></div>
 
-<div class="card"><h2>Деньги: откуда пришли и куда ушли <span class="sub" id="cfMonth"></span></h2>
+<div class="card"><h2>Деньги: откуда пришли и куда ушли <span class="sub" id="cfMonth"></span><span class="info" data-tip="Упрощённый ДДС по банковским выпискам: какие поступления и платежи изменили остаток денег за месяц и с начала года. Сверяется с балансом.">i</span></h2>
 <div class="hint" style="margin-bottom:6px">Упрощённый ДДС по банковским выпискам обеих компаний. Переводы между своими счетами и платежи между «Маркгрупп» и «Супер Винил» исключены.</div><div id="cf"></div></div>
 
-<div class="card"><h2>Коэффициенты</h2><div class="hint" style="margin-bottom:8px">Набор по канону (методичка, разделы 3.1, 6.2, 6.3 и 8). Наведите курсор на название, чтобы увидеть формулу. Доходность — в годовых, с начала 2026 года.</div><div class="lg" style="margin-bottom:8px"><span>Цвет ячейки:</span><span><i style="background:#e3f5ea"></i>зелёный — в норме</span><span><i style="background:#fff3cd"></i>жёлтый — внимание</span><span><i style="background:#fde2e2"></i>красный — риск</span><span>без цвета — у показателя нет нормы</span></div><div class="bal"><table id="ratios" class="ratio"></table></div></div>
+<div class="card"><h2>Коэффициенты<span class="info" data-tip="Показатели эффективности и устойчивости: оборачиваемость, финансовый цикл, доходность, ликвидность, долговая нагрузка — с нормами и цветовой оценкой.">i</span></h2><div class="hint" style="margin-bottom:8px">Набор по канону (методичка, разделы 3.1, 6.2, 6.3 и 8). Наведите курсор на название, чтобы увидеть формулу. Доходность — в годовых, с начала 2026 года.</div><div class="lg" style="margin-bottom:8px"><span>Цвет ячейки:</span><span><i style="background:#e3f5ea"></i>зелёный — в норме</span><span><i style="background:#fff3cd"></i>жёлтый — внимание</span><span><i style="background:#fde2e2"></i>красный — риск</span><span>без цвета — у показателя нет нормы</span></div><div class="bal"><table id="ratios" class="ratio"></table></div></div>
 
-<div class="card"><h2>Проверки <span class="sub" id="chkMonth"></span></h2><ul class="checks" id="checks"></ul></div>
+<div class="card"><h2>Проверки <span class="sub" id="chkMonth"></span><span class="info" data-tip="Контроль качества отчёта: баланс сходится, НДС свёрнут, внутригрупповые расчёты исключены, связь с прибылью и ДДС соблюдена.">i</span></h2><ul class="checks" id="checks"></ul></div>
 
-<div class="card"><h2>Журнал корректировок</h2>
+<div class="card"><h2>Журнал корректировок<span class="info" data-tip="Ручные правки собственника к данным учёта: что, за какой месяц и почему изменено. Хранятся в этом браузере, можно скачать.">i</span></h2>
 <div class="hint">Корректировки сохраняются в этом браузере. Часть из них внесена заранее по ответам Олеси (рыночная стоимость имущества, скрытые обязательства).</div>
 <table id="adjT" style="margin-top:10px"></table>
 <div style="margin-top:10px;display:flex;gap:8px"><button class="btn" onclick="resetAdj()">Сбросить к исходным</button><button class="btn" onclick="exportAdj()">Скачать корректировки (JSON)</button></div></div>
@@ -164,6 +169,14 @@ const dso=DSO;
 function delta(a,b,inv){const d=a-b;if(Math.abs(d)<1)return'<span class="sub">без изменений</span>';const good=inv?d<0:d>0;return `<span class="${good?'up':'dn'}">${d>0?'▲':'▼'} ${fm(Math.abs(d))}</span>`}
 function renderMonths(){document.getElementById("months").innerHTML=L.map((l,i)=>`<button class="${i==sel?'on':''}" onclick="pick(${i})">${l}</button>`).join("")}
 function pick(i){sel=i;renderAll()}
+const KTIP={"Собственный капитал":"Сколько бизнес стоит для собственника: все активы минус все обязательства, с учётом проектов в работе и корректировок.",
+"Деньги на счетах":"Остаток на расчётных счетах обеих компаний на конец месяца. Цвет — хватает ли денег на ближайшие платежи.",
+"Застряло в обороте":"Деньги, вложенные в работу, но ещё не вернувшиеся: долги клиентов, проекты в работе, авансы подрядчикам, материалы.",
+"Кредиты и займы":"Банковские кредиты и займы группы. Зелёный — долга нет.",
+"Финансовый цикл":"Сколько дней деньги находятся в обороте: от оплаты подрядчику до оплаты клиентом. Авансы клиентов цикл сокращают.",
+"ROE":"Доходность собственного капитала в годовых: сколько прибыли приносит каждый рубль, вложенный собственником.",
+"Текущая ликвидность":"Во сколько раз оборотные активы покрывают краткосрочные долги. Ниже 1,5 — мало запаса прочности.",
+"Доля собственного капитала":"Какая часть активов принадлежит собственнику, а не кредиторам. Ниже 50% — бизнес сильно зависит от чужих денег."};
 function renderKPI(){const p=Math.max(0,sel-1);
  const pct=x=>x==null?"—":Math.round(x*100)+"%", dd=x=>x==null?"—":Math.round(x)+" дн", k2=x=>x.toFixed(2);
  const K=[["Собственный капитал",eqB,fm,0,"управленческий, из источников"],["Деньги на счетах",m=>v(m,"cash"),fm,0,"",m=>{const c=COVER(m);return c==null?"":c<0.5?"bad":c<1?"warn":"good"}],
@@ -172,7 +185,7 @@ function renderKPI(){const p=Math.max(0,sel-1);
  ["Текущая ликвидность",LIQ,k2,0,"норма 1,5–2,0",m=>band(LIQ(m),1.5,1)],["Доля собственного капитала",AUT,pct,0,"норма ≥ 50%",m=>band(AUT(m),0.5,0.3)]];
  document.getElementById("kpis").innerHTML=K.map(([t,f,F,inv,h,st])=>{const a=f(sel),b=f(p);let d;
   if(a==null||b==null||sel==0)d='<span class="sub">—</span>';else if(F===fm)d=delta(a,b,inv);else{const df=a-b,good=inv?df<0:df>0;d=Math.abs(df)<1e-9?'<span class="sub">без изменений</span>':`<span class="${good?'up':'dn'}">${df>0?'▲':'▼'} ${F===pct?Math.abs(Math.round(df*100))+" п.п.":F===dd?Math.abs(Math.round(df))+" дн":Math.abs(df).toFixed(2)}</span>`}
-  return `<div class="kpi ${st?st(sel):""}"><div class="t">${t}</div><div class="v">${F(a)}</div><div class="d">${d} <span class="sub">к ${L[p]}</span></div><div class="t">${h}</div></div>`}).join("")}
+  return `<div class="kpi ${st?st(sel):""}"><div class="t">${t}<span class="info" data-tip="${KTIP[t]||""}">i</span></div><div class="v">${F(a)}</div><div class="d">${d} <span class="sub">к ${L[p]}</span></div><div class="t">${h}</div></div>`}).join("")}
 function renderSummary(){const s=sel,z=0,A=tot(s,"A");document.getElementById("sumMonth").textContent="· "+L[s]+(s?" 2026":" 2025");
  const st=stuck(s),parts=[["дебиторке клиентов","ar"],["проектах в работе","wip"],["авансах подрядчикам","adv_paid"],["материалах","inv"]].map(([n,l])=>[n,v(s,l)]).sort((a,b)=>b[1]-a[1]);
  const book=M[s].book_eq,ad=adj.filter(a=>a.m==s).length;
@@ -223,7 +236,7 @@ function renderTable(){let h=`<tr><th>млн ₽</th>${L.map((l,i)=>`<th class="
  document.getElementById("bal").innerHTML=h}
 function showDet(l){detLine=l;renderDet();document.getElementById("detTitle").scrollIntoView({behavior:"smooth",block:"center"})}
 function renderDet(){const l=detLine,m=M[sel],items=(m.det[l]||[]),mx=Math.max(1,...items.map(x=>Math.abs(x[1])));
- document.getElementById("detTitle").innerHTML=`${NAMES[l]} · ${L[sel]} <span class="sub">${fm(v(sel,l))}</span>`;
+ document.getElementById("detTitle").innerHTML=`${NAMES[l]} · ${L[sel]} <span class="sub">${fm(v(sel,l))}</span><span class="info" data-tip="Расшифровка выбранной строки баланса за выбранный месяц: крупнейшие контрагенты, проекты, возраст долга. Нажмите на название строки в таблице баланса, чтобы сменить.">i</span>`;
  let h=items.length?items.map(([k,x])=>`<div class="rowbar"><div><div class="l" title="${k}">${k}</div><div class="bar" style="width:${Math.abs(x)/mx*100}%;background:${COLORS[l]||'#d43c3c'}"></div></div><div style="text-align:right">${fmt(x)}</div></div>`).join(""):'<div class="sub">Расшифровка по контрагентам для этой строки не нужна: это сумма по счетам учёта.</div>';
  if(l=="ar"){const a=m.aging,t=Object.values(a).reduce((s,x)=>s+x,0)||1;h=`<div class="hint">Возраст долга (сколько дней просрочено). Красный — просрочка больше 60 дней, это главный риск дебиторки:</div><div style="display:flex;height:22px;border-radius:6px;overflow:hidden;margin:6px 0 4px">${Object.entries(a).map(([k,x],i)=>`<div title="${k}: ${fmt(x)}" style="width:${x/t*100}%;background:${["#12a150","#e8a317","#f07b3f","#d43c3c"][i]}"></div>`).join("")}</div><div class="legend" style="margin-bottom:12px">${Object.entries(a).map(([k,x],i)=>`<span><i style="background:${["#12a150","#e8a317","#f07b3f","#d43c3c"][i]}"></i>${k}: ${fmt(x)}</span>`).join("")}</div><div class="hint">Крупнейшие должники:</div>`+h}
  if(l=="wip")h=`<div class="hint">Проектов в работе: <b>${m.nwip}</b>. Затраты по ним уже понесены, но в 1С сразу списаны в расходы. Здесь они показаны как актив.</div>`+h;
@@ -249,7 +262,7 @@ function renderRatios(){const pct=x=>x==null?"—":(x*100).toFixed(0)+"%",pct1=x
  ["Финансовая независимость","Капитал / активы",AUT,pct,"≥ 50%",x=>band(x,0.5,0.3)],
  ["Долг / капитал","Кредиты и займы / капитал",m=>v(m,"debt")/eqB(m),k2,"< 1",x=>band(x,1,2,1)]];
  document.getElementById("ratios").innerHTML=`<tr><th>Показатель</th>${L.map((l,i)=>`<th class="${i==sel?'sel':''}">${l}</th>`).join("")}<th style="text-align:left">Норма</th></tr>`+
-  R.map(([n,f,fn,F,norm,cl])=>`<tr><td title="${f}">${n.replace(/^  /,"&nbsp;&nbsp;&nbsp;&nbsp;")}</td>${M.map((_,m)=>{const x=fn(m);return `<td class="${m==sel?'sel':''} ${cl?cl(x):''}">${x==null?'—':F(x)}</td>`}).join("")}<td class="n">${norm}</td></tr>`).join("")}
+  R.map(([n,f,fn,F,norm,cl])=>`<tr><td>${n.startsWith("  ")?"&nbsp;&nbsp;&nbsp;&nbsp;":""}<span class="ftip" data-tip="Формула: ${f}">${n.trim()}</span></td>${M.map((_,m)=>{const x=fn(m);return `<td class="${m==sel?'sel':''} ${cl?cl(x):''}">${x==null?'—':F(x)}</td>`}).join("")}<td class="n">${norm}</td></tr>`).join("")}
 function cfData(s,ytd){const o={};(ytd?M.slice(1,s+1):[M[s]]).forEach(mm=>Object.entries(mm.cf).forEach(([k,x])=>o[k]=(o[k]||0)+x));return o}
 function renderCF(){const s=sel,box=document.getElementById("cf");document.getElementById("cfMonth").textContent="· "+L[s];
  if(!s){box.innerHTML='<div class="sub">Для декабря 2025 движения денег нет: это стартовая точка, есть только остатки.</div>';return}
@@ -292,5 +305,10 @@ function resetAdj(){adj=DATA.presets.map(x=>({...x}));save();renderAll()}
 function exportAdj(){const b=new Blob([JSON.stringify(adj,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="olfin_корректировки.json";a.click()}
 function renderAll(){renderMonths();renderSummary();renderKPI();renderChart();renderTable();renderCF();renderRatios();renderChecks();renderDet();renderAdj()}
 document.addEventListener("keydown",e=>{if(e.key=="Escape")closeM();if(e.key=="Enter"&&document.getElementById("modal").style.display=="flex")saveM()});
-window.addEventListener("resize",renderChart);renderAll();
+window.addEventListener("resize",renderChart);
+(()=>{const g=document.createElement("div");g.className="gtip";document.body.appendChild(g);let cur=null;
+ const place=e=>{const w=g.offsetWidth,h=g.offsetHeight;let x=e.clientX+14,y=e.clientY+16;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+h>innerHeight-8)y=e.clientY-h-12;g.style.left=x+"px";g.style.top=y+"px"};
+ document.addEventListener("mouseover",e=>{const t=e.target.closest&&e.target.closest("[data-tip]");if(t&&t.dataset.tip){cur=t;g.textContent=t.dataset.tip;g.classList.add("on");place(e)}else if(cur){cur=null;g.classList.remove("on")}});
+ document.addEventListener("mousemove",e=>{if(cur)place(e)});})();
+renderAll();
 </script></body></html>
