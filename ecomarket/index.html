@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Симулятор доставки · Экомаркет × AI в деле</title>
+<style>
+:root{color-scheme:light;--ink:#182820;--muted:#52665b;--line:#dce6dc;--green:#245c43;--mint:#e5f2e5;--paper:#f4f7f1;--white:#fff;--orange:#a65530}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 system-ui,-apple-system,sans-serif}button,select,input{font:inherit}button,select{cursor:pointer}a{color:inherit}button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #a65530;outline-offset:3px}
+.wrap{width:min(1336px,100% - 80px);margin:auto}header{border-bottom:1px solid var(--line);background:#fafff9}header .wrap{height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-weight:760;letter-spacing:-.04em;font-size:21px;display:flex;align-items:center;gap:11px}.brand i{display:grid;place-items:center;width:33px;height:33px;border-radius:10px;background:var(--green)}.brand i:after{content:"";width:14px;height:17px;background:#d9f0d3;border-radius:12px 0 12px 0;transform:rotate(12deg)}.brand span{color:var(--muted);font-size:14px;font-weight:550;letter-spacing:0}nav{display:flex;gap:24px;font-size:14px}nav a{text-decoration:none}nav a:hover{text-decoration:underline}
+.hero{display:flex;justify-content:space-between;align-items:end;gap:30px;padding:41px 0 26px}.eyebrow{font-size:13px;font-weight:750;color:var(--green);letter-spacing:.1em;text-transform:uppercase}.hero h1{font-size:clamp(35px,5vw,62px);letter-spacing:-.065em;line-height:1.03;margin:8px 0 12px;font-weight:740}.hero p{margin:0;color:var(--muted);max-width:650px}.controls{display:flex;align-items:end;gap:9px;flex:none}.controls label{display:grid;gap:3px;font-size:13px;color:var(--muted);font-weight:650}select,button{border:1px solid var(--line);border-radius:10px;background:var(--white);color:var(--ink);padding:10px 13px;font-weight:650}.primary{background:var(--green);border-color:var(--green);color:white}.primary:hover{background:#194b35}.primary:disabled{opacity:.66;cursor:wait}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:15px}.kpi{background:var(--white);border:1px solid var(--line);border-radius:15px;padding:14px 17px}.kpi:first-child{background:var(--mint);border-color:#cfe4d2}.kpi span{font-size:14px;font-weight:620;color:var(--muted)}.kpi strong{display:block;font-size:clamp(24px,3vw,37px);line-height:1.1;letter-spacing:-.06em;margin:5px 0}.kpi small{font-size:13px;color:var(--muted)}
+.workspace{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(280px,1fr);gap:14px}.card{background:white;border:1px solid var(--line);border-radius:17px;overflow:hidden}.bar{min-height:68px;padding:13px 17px;display:flex;justify-content:space-between;align-items:center;gap:10px}h2,h3,p{margin-top:0}h2{font-size:22px;letter-spacing:-.04em;margin-bottom:0}h3{font-size:17px;margin-bottom:6px}.sub{font-size:13px;color:var(--muted)}.toggle{display:flex;gap:3px;padding:3px;background:#edf2ed;border-radius:10px}.toggle button{border:0;padding:6px 10px;background:transparent;font-size:13px;white-space:nowrap}.toggle button[aria-pressed=true]{background:#fff;box-shadow:0 1px 4px #172b2018;color:var(--green)}
+.map{position:relative;background:#e9efe5;overflow:hidden;height:370px;border-block:1px solid var(--line)}canvas{display:block;width:100%;height:100%}.mapLabel{position:absolute;left:13px;top:12px;background:#fafff9e8;border:1px solid #dce6dc;padding:5px 9px;border-radius:8px;font-size:12px;color:var(--muted);pointer-events:none}.legend{position:absolute;bottom:12px;left:13px;display:flex;gap:12px;flex-wrap:wrap;background:#fafff9ef;padding:6px 10px;border-radius:8px;font-size:12px;pointer-events:none}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:5px}.dot.auto{background:var(--orange)}.dot.pending{background:#7c8176}
+.timeline{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:13px 16px}.timeline button{padding:6px 10px;font-size:14px}.timeline time{font-variant-numeric:tabular-nums;font-weight:750;font-size:15px}input[type=range]{width:100%;accent-color:var(--green);min-width:0;cursor:pointer}
+.side{display:flex;flex-direction:column}.side .bar{border-bottom:1px solid var(--line)}.sideSummary{padding:10px 16px;background:#f1f7ef;color:var(--green);font-size:14px}.routeList{height:237px;overflow:auto;padding:7px 9px}.route{border:1px solid transparent;width:100%;text-align:left;padding:7px 8px;display:flex;justify-content:space-between;align-items:center;gap:8px;background:white;font-size:14px}.route:hover,.route[aria-pressed=true]{background:#eef5ee;border-color:#d5e6d8}.route b{font-weight:680}.route small{display:block;color:var(--muted);font-size:12px;font-weight:450}.detail{border-top:1px solid var(--line);padding:11px 16px;min-height:104px;font-size:13px;color:var(--muted)}.detail strong{color:var(--ink)}.detail p{margin:0 0 4px}.detail ul{padding-left:17px;margin:4px 0}.status{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}
+.comparison{margin-top:14px}.comparison .bar{border-bottom:1px solid var(--line)}.tableScroll{overflow:auto}.comparison table{width:100%;border-collapse:collapse;font-size:14px;white-space:nowrap}.comparison th,.comparison td{text-align:right;padding:9px 16px;border-bottom:1px solid var(--line)}.comparison th:first-child,.comparison td:first-child{text-align:left}.comparison thead th{vertical-align:bottom;background:#f5f8f4}.comparison thead button{font-size:13px;padding:6px 9px}.comparison [data-current="true"]{background:#eef6ed}.algorithmSelect{font-size:13px;color:var(--muted);display:grid;gap:2px}.algorithmSelect select{padding:6px 8px;font-size:14px;max-width:100%}.lower{margin:18px 0 40px}.lower details{background:white;border:1px solid var(--line);border-radius:13px;margin:9px 0;padding:12px 16px}.lower summary{cursor:pointer;font-weight:700}.lower ul{padding-left:21px}.lower li{margin:5px 0}.lower p:last-child{margin-bottom:0}.lower a{color:var(--green)}footer{font-size:13px;color:var(--muted);padding:0 0 25px}
+@media(max-width:920px){.wrap{width:calc(100% - 36px)}.hero{align-items:start;flex-direction:column;gap:16px}.workspace{grid-template-columns:minmax(0,1fr)}.routeList{height:180px}}@media(max-width:520px){.wrap{width:calc(100% - 24px)}header .wrap{height:57px}nav a:first-child,.brand span{display:none}.hero{padding-top:26px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi{padding:11px}.bar{align-items:start;flex-wrap:wrap}.map{height:300px}.controls{flex-wrap:wrap}.timeline{padding-inline:10px;gap:8px}}
+
+nav{align-items:center}nav button{padding:5px 9px;font-size:13px}
+.tip{display:inline-grid;place-items:center;width:17px;height:17px;padding:0;margin-left:5px;border-radius:50%;border:1px solid #82998a;color:var(--green);background:#fff;font:700 11px/1 system-ui;vertical-align:1px}
+.metricLabel,.tableLabel,.algoHeader{display:flex;align-items:center;gap:7px;min-width:0}
+.metricLabel{align-items:flex-start}.metricLabel span,.tableLabel span{min-width:0}.metricLabel .tip{margin-top:2px}
+.algoHeader{justify-content:flex-end}.algoHeader>button:first-child{white-space:nowrap}
+.comparison .tip,.metricLabel .tip{flex:0 0 20px;width:20px;height:20px;padding:0;margin-left:0;line-height:1}
+.tableScroll{max-width:100%;overscroll-behavior-inline:contain}
+.comparison table{border-collapse:separate;border-spacing:0}
+.comparison th:first-child{position:sticky;left:0;z-index:2;background:#fff;min-width:clamp(135px,30vw,222px);max-width:clamp(135px,30vw,235px);white-space:normal;box-shadow:1px 0 0 var(--line)}
+.comparison thead th:first-child{background:#f5f8f4}
+.comparison tbody tr:nth-last-child(-n+2) th:first-child{background:#f1f7ef}
+.comparison tbody tr:nth-last-child(-n+2) td{font-weight:680}
+.side .bar>div{min-width:0}.side .bar>strong{flex:none;font-size:14px}
+.workspace>.card{min-width:0}.algorithmSelect{min-width:0;max-width:100%;flex:0 1 auto}.algorithmSelect select{width:100%;min-width:0}
+.map{height:clamp(295px,36vw,424px)}.mapLabel,.legend{max-width:calc(100% - 26px)}.mapLabel{white-space:nowrap}.mapCompass{position:absolute;right:14px;top:12px;display:grid;justify-items:center;color:#4d6559;font:700 11px/1 system-ui;pointer-events:none}.mapCompass:after{content:"";width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:12px solid #4d6559;margin-top:4px}
+@media(max-width:520px){.wrap{width:calc(100% - 24px)}header .wrap{gap:8px}.brand{gap:5px}.brand i{width:24px;height:24px;flex:none}.brand i:after{width:11px;height:13px}nav a{display:none}nav button{white-space:nowrap}.algorithmSelect{width:100%}.map{height:clamp(240px,72vw,325px)}.comparison th,.comparison td{padding-inline:11px}.metricLabel{gap:4px}.metricLabel span{font-size:13px}.kpi strong{font-size:clamp(19px,6vw,29px);overflow-wrap:anywhere}}
+.tip:hover,.tip:focus-visible{background:var(--mint)}
+.tooltip{position:fixed;z-index:40;max-width:min(310px,calc(100vw - 24px));white-space:normal;background:#223a2c;color:white;border-radius:10px;padding:9px 12px;font-size:13px;box-shadow:0 8px 22px #19322533;pointer-events:none}
+.tourFocus{outline:3px solid #508164;outline-offset:5px;scroll-margin:24px}
+.tour{position:fixed;z-index:30;right:20px;bottom:20px;width:min(360px,calc(100vw - 40px));padding:15px 16px;background:#fff;border:1px solid #c2d8c6;border-radius:15px;box-shadow:0 9px 32px #19322529}
+.tour h2{font-size:19px;margin:4px 0 5px}.tour p{color:var(--muted);font-size:14px;margin:0 0 12px}.tourActions{display:flex;justify-content:space-between;align-items:center;gap:8px}.tourActions button{padding:7px 9px;font-size:13px}.tourProgress{color:var(--green);font-size:12px;font-weight:700}
+.comparison tbody tr:last-child{font-weight:740}.comparison [data-current="true"]{background:#e9f4e8}.comparison .bar{align-items:center}.monthControl{font-size:13px;font-weight:650;color:var(--muted);display:grid;gap:3px}.monthControl select{padding:6px 9px;font-size:14px}
+@media(max-width:520px){header .brand{font-size:17px}nav{gap:8px}.tour{right:12px;bottom:12px;width:calc(100vw - 24px)}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="brand"><i aria-hidden="true"></i>Экомаркет <span>× AI в деле</span></div><nav aria-label="Разделы"><a href="#simulation">Симулятор</a><a href="#comparison">Сравнение</a><button id="startTour" type="button">Как пользоваться</button></nav></div></header>
+<main class="wrap" id="simulation">
+<section class="hero"><div><div class="eyebrow">Москва · демо на синтетической истории</div><h1>Симулятор доставки</h1><p>Как изменятся стоимость и сроки московской доставки при разных правилах распределения заказов. Диспетчер и три алгоритма проходят один и тот же день на смоделированных заказах.</p></div>
+<div class="controls"><label>День<select id="day"><option value="0">19 ноября · будни</option><option value="1">20 ноября · пик</option><option value="2">21 ноября · выходной</option></select></label><button class="primary" id="run">Пересчитать день</button></div></section>
+<section class="kpis" id="kpis" aria-label="Итоги дня"></section>
+<section class="workspace" aria-label="Маршруты и воспроизведение">
+<div class="card"><div class="bar"><div><h2>Карта маршрутов</h2><div class="sub" id="mapInfo"></div></div><label class="algorithmSelect">Алгоритм распределения<select id="algorithm"></select></label></div>
+<div class="map"><canvas id="map" role="img" aria-label="Схема рейсов по Москве. Выбрать рейс можно в списке."></canvas><span class="mapCompass" aria-hidden="true">С</span><div class="mapLabel">Центр Москвы · схема</div><div class="legend"><span><i class="dot"></i>Пешком</span><span><i class="dot auto"></i>На авто</span><span><i class="dot pending"></i>Ожидают</span></div></div>
+<div class="timeline"><button id="play">▶ Проиграть</button><input id="time" aria-label="Время симуляции" type="range" min="0" max="960" value="960"><time id="clock"></time></div></div>
+<aside class="card side"><div class="bar"><div><h2>Рейсы дня</h2><div class="sub" id="modeLabel"></div></div><strong id="count"></strong></div><div class="sideSummary" id="routeSummary"></div><div class="routeList" id="routeList" role="group" aria-label="Выбор рейса"></div><div class="detail" id="detail"></div></aside>
+</section>
+<section class="card comparison" id="comparison"><div class="bar"><div><h2>Сравнение алгоритмов</h2><div class="sub">Нажмите на алгоритм, чтобы увидеть его рейсы. Оценка за месяц основана на средней стоимости заказа в выбранный день.</div></div><label class="monthControl" id="monthControl">Заказов в месяц<select id="month"><option value="18000">18 000</option><option value="19000" selected>19 000</option><option value="20000">20 000</option></select></label></div><div class="tableScroll" tabindex="0" role="region" aria-label="Таблица сравнения алгоритмов, прокручивается по горизонтали"><table id="compare"></table></div></section>
+<div class="status" id="status" aria-live="polite"></div>
+<section class="lower">
+<details id="method"><summary>Как устроен расчёт</summary>
+<ul><li>Прогноз за месяц переносит среднюю стоимость заказа выбранного дня на указанный месячный объём. Диспетчер и три алгоритма получают одинаковые заказы по мере поступления. У каждого заказа есть район, время оформления, готовность после сборки, вес и окно доставки. Курьер доступен для следующего рейса после возвращения на склад.</li>
+<li>Диспетчер — модель ручного процесса. Она объединяет уже собранные заказы одного района, выезжает при первой возможности и фиксирует состав рейса. В демо она чаще назначает авто.</li>
+<li>«Точно в окно» выбирает рейс с запасом до конца окна. «Больше заказов» ждёт до 12 минут ради совместимой доставки и собирает до четырёх стопов. «Лёгкие рейсы» ограничивает вес до 8 кг для пешего курьера и до 22 кг для автокурьера. Тяжёлый заказ, который превышает мягкий лимит, отправляется отдельно, в пределах общего лимита транспорта.</li>
+<li>Базовые средние цены по диспетчеру взяты из разговора: 590 ₽ за пешую доставку и 760 ₽ за автодоставку. В демо у каждого рейса есть стартовая стоимость и доплата за каждую следующую остановку: 390 ₽ пешком и 470 ₽ на авто. Это модельные доплаты. Стартовую стоимость рассчитываем по рейсам диспетчера так, чтобы его средние цены совпадали с 590 ₽ и 760 ₽. Тот же тариф применяем ко всем алгоритмам. При объединении заказов стоимость выезда делится между доставками, поэтому средняя цена на заказ меняется. Месячную экономию считаем как расходы диспетчера минус расходы алгоритма при выбранном объёме. Время в пути приближённое, с поправкой на часы пик. На карте показана последовательность остановок по условным адресам.</li>
+</ul><p>Для проверки на данных Экомаркета понадобятся история заказов с окнами и временем сборки, фактические рейсы и отметки доставки, смены курьеров, тарифы и расчёт времени в пути по дорожной сети.</p></details>
+
+</section>
+<footer>AI в деле · прототип на сгенерированных заказах. Цифры показывают эффект внутри модели.</footer>
+</main>
+<div class="tooltip" id="tipPopup" role="tooltip" hidden></div>
+<aside class="tour" id="tour" aria-label="Как пользоваться симулятором" hidden>
+  <div aria-live="polite"><div class="tourProgress" id="tourProgress"></div><h2 id="tourTitle"></h2><p id="tourCopy"></p></div>
+  <div class="tourActions"><button type="button" id="tourSkip">Закрыть</button><button type="button" class="primary" id="tourNext">Далее</button></div>
+</aside>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const hub = {x:50,y:53};
+const strategies = {
+  base:{name:'Диспетчер',detail:'Модель ручного распределения. Диспетчер быстро отправляет готовые заказы, объединяя до двух в одном районе.',wait:0,max:2},
+  windows:{name:'1 · Точно в окно',summary:'Алгоритм ставит в приоритет попадания во временное окно',detail:'Приоритет запаса до конца окна. Стратегия сравнивает порядок остановок и время до дедлайна.',wait:0,max:3},
+  batching:{name:'2 · Больше заказов',summary:'Алгоритм объединяет как можно больше совместимых заказов в рейс',detail:'До четырёх заказов в рейсе. Стратегия может дождаться сборки совместимого заказа неподалёку.',wait:12,max:4},
+  weight:{name:'3 · Лёгкие рейсы',summary:'Алгоритм ограничивает общий вес рейса',detail:'Ограничивает общий вес рейса. Тяжёлые заказы доставляет по одному.',wait:5,max:3}
+};
+const zones = [
+  {name:'Пресня',x:35,y:43},{name:'Арбат',x:43,y:55},
+  {name:'Хамовники',x:36,y:73},{name:'Якиманка',x:53,y:67},
+  {name:'Тверской',x:48,y:39},{name:'Басманный',x:73,y:43},
+  {name:'Таганский',x:68,y:69},{name:'Дорогомилово',x:25,y:60},
+  {name:'Сокольники',x:83,y:23},{name:'Даниловский',x:60,y:88},
+  {name:'Мещанский',x:59,y:24},{name:'Замоскворечье',x:61,y:60}
+];
+const types = {
+  walk:{label:'Пешком',speed:.74,limit:12,radius:24,price:590,extra:390},
+  auto:{label:'На авто',speed:1.9,limit:45,radius:100,price:760,extra:470}
+};
+const fmt = new Intl.NumberFormat('ru-RU');
+const money = n => fmt.format(Math.round(n)) + ' ₽';
+const pct = n => fmt.format(Math.round(n*10)/10) + '%';
+const clock = n => {
+  const hours=8+Math.floor(n/60);
+  return String(hours%24).padStart(2,'0')+':'+String(n%60).padStart(2,'0')+(hours>=24?' +1':'');
+};
+const distance = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
+function rng(seed) {
+  return () => { seed = (Math.imul(1664525,seed)+1013904223)>>>0; return seed/4294967296; };
+}
+function history(day) {
+  const random = rng(1287+day*67);
+  const orders = [];
+  const total=[618,668,644][day];
+  for(let wave=0;orders.length<total;wave++) {
+    const zone=zones[Math.floor(random()*zones.length)];
+    const start=Math.floor(wave*870/(total/3.8));
+    const size=2+Math.floor(random()*5);
+    for(let i=0;i<size&&orders.length<total;i++){
+      const placed=Math.min(885,start+i*3+Math.floor(random()*4));
+      const ready=placed+5+Math.floor(random()*11);
+      orders.push({id:1001+orders.length,placed,ready,start:placed+20+Math.floor(random()*12),end:placed+(wave%9===0?36:50)+Math.floor(random()*25),
+        weight:2+Math.floor(random()*10),zone:zone.name,x:zone.x+(random()-.5)*9,y:zone.y+(random()-.5)*9});
+    }
+  }
+  return orders.sort((a,b)=>a.placed-b.placed);
+}
+function routePlan(stops, departure, type) {
+  let time=departure, prev=hub;
+  const rush=(departure>=90&&departure<180)||(departure>=540&&departure<710);
+  const speed=type.speed*(rush&&type===types.auto?.73:1);
+  const visits=stops.map(order=>{
+    time=Math.max(order.start,time+Math.ceil(distance(prev,order)/speed)+2);
+    prev=order;
+    return {order,time};
+  });
+  return {visits,back:time+Math.ceil(distance(prev,hub)/speed)+2,
+    slack:Math.min(...visits.map(v=>v.order.end-v.time)),
+    late:visits.reduce((sum,v)=>sum+Math.max(0,v.time-v.order.end),0)};
+}
+function sequences(orders, max, used=[], result=[]) {
+  if(used.length) result.push(used);
+  if(used.length<max) for(const order of orders) if(!used.includes(order)) sequences(orders,max,[...used,order],result);
+  return result;
+}
+function simulate(orders, key, costs) {
+  const policy=strategies[key];
+  const fleet=Array.from({length:68},(_,i)=>({id:i+1,mode:i<29?'walk':'auto',free:0}));
+  const assigned=new Set(), routes=[];
+  const readyOrder=[...orders].sort((a,b)=>a.ready-b.ready);
+  let cursor=0;
+  const ready=[];
+  for(let t=0;t<1440 && assigned.size<orders.length;t++) {
+    while(cursor<orders.length&&readyOrder[cursor].ready<=t) ready.push(readyOrder[cursor++]);
+    const waiting=new Set();
+    while(ready.some(order=>!waiting.has(order.id))) {
+      const first=ready.find(order=>!waiting.has(order.id));
+      const awaiting=policy.wait&&orders.some(o=>!assigned.has(o.id)&&o.placed<=t&&o.ready>t&&o.ready<=t+policy.wait&&distance(first,o)<10);
+      if(awaiting&&t<first.ready+policy.wait&&t<first.end-30){
+        waiting.add(first.id);
+        continue;
+      }
+      const nearby=ready.filter(o=>o!==first&&(key==='base'?o.zone===first.zone:distance(first,o)<12)).slice(0,4);
+      const candidates=key==='base'?[[first,...nearby.slice(0,1)],[first]]:sequences([first,...nearby],policy.max).filter(stops=>stops.includes(first));
+      const prefersWalk=first.id%10<7;
+      let best;
+      for(const mode of ['walk','auto']) {
+        const courier=fleet.find(c=>c.mode===mode&&c.free<=t);
+        if(!courier) continue;
+        const type=types[mode];
+        for(const stops of candidates) {
+          const weight=stops.reduce((sum,o)=>sum+o.weight,0);
+          const softLimit=mode==='walk'?8:22;
+          if(weight>type.limit||stops.some(o=>distance(hub,o)>type.radius)) continue;
+          if(key==='weight'&&stops.length>1&&weight>softLimit) continue;
+          const plan=routePlan(stops,t,type);
+          if(stops.length>1&&plan.late) continue;
+          const duration=plan.back-t;
+          let preference;
+          switch(key){
+            case 'base': preference=stops.length* -25+((mode==='walk')===prefersWalk?0:50); break;
+            case 'windows': preference=-Math.min(15,plan.slack)*12-stops.length*24+type.price/10+duration*.3; break;
+            case 'batching': {
+              const nearWarehouse=stops.every(order=>distance(hub,order)<=types.walk.radius);
+              const routeCost=costs[mode].first+type.extra*(stops.length-1);
+              preference=routeCost/stops.length-stops.length*27+duration*.45;
+              if(mode==='auto'&&nearWarehouse) preference+=165;
+              break;
+            }
+            case 'weight': preference=type.price*.5+(weight/(mode==='walk'?8:22))*75-stops.length*36+duration*.3; break;
+          }
+          const score=plan.late*10000+preference;
+          if(!best||score<best.score) best={...plan,courier,mode,score,stops,weight};
+        }
+      }
+      if(!best){waiting.add(first.id);continue;}
+      best.courier.free=best.back;
+      routes.push({id:routes.length+1,mode:best.mode,courier:best.courier.id,visits:best.visits,back:best.back,depart:t,weight:best.weight});
+      for(const o of best.stops){assigned.add(o.id);ready.splice(ready.indexOf(o),1);}
+    }
+  }
+  const visits=routes.flatMap(r=>r.visits);
+  const walk=routes.filter(r=>r.mode==='walk').reduce((s,r)=>s+r.visits.length,0);
+  return {routes,visits,walk,auto:visits.length-walk,
+    onTime:visits.filter(v=>v.time<=v.order.end).length/visits.length*100};
+}
+function calibrateCosts(base){
+  return Object.fromEntries(Object.entries(types).map(([mode,type])=>{
+    const count=base.routes.filter(route=>route.mode===mode).length;
+    const first=type.extra+(type.price-type.extra)*base[mode]/count;
+    return [mode,{first,extra:type.extra}];
+  }));
+}
+function priceRoutes(results,costs){
+  for(const result of Object.values(results)){
+    result.spend={walk:0,auto:0};
+    for(const route of result.routes){
+      const tariff=costs[route.mode];
+      route.cost=tariff.first+(route.visits.length-1)*tariff.extra;
+      result.spend[route.mode]+=route.cost;
+    }
+    result.cost=result.spend.walk+result.spend.auto;
+  }
+}
+let orders, results, mode='windows', time, end, selected, timer, displayedRoutes=[];
+const tip = (label,copy)=>'<button class="tip" type="button" data-tip="'+copy+'" aria-label="Справка: '+label+'">i</button>';
+const monthly = (scenario,volume)=>Math.round(scenario.cost/scenario.visits.length*volume);
+const savings=n=>n===0?'0 ₽':money(Math.abs(n))+(n>0?' экономии':' перерасхода');
+function metrics(){
+  hideTip();
+  const base=results.base, current=results[mode];
+  const volume=Number($('month').value);
+  const save=monthly(base,volume)-monthly(current,volume);
+  const cards=[
+    [save<0?'Перерасход за месяц':'Экономия за месяц',money(Math.abs(save)),(mode==='base'?'Диспетчер · база сравнения':'Оценка при '+fmt.format(volume)+' заказов'),'Разница в средней стоимости заказа у диспетчера и выбранного алгоритма, умноженная на объём за месяц. Расчёт переносит результаты выбранного дня на месяц.'],
+    ['Средняя стоимость доставки',money(current.cost/current.visits.length),'Диспетчер · '+money(base.cost/base.visits.length),'Общие затраты за выбранный день, разделённые на число доставленных заказов.'],
+    ['В обещанное окно',pct(current.onTime),'Диспетчер · '+pct(base.onTime),'Доля заказов, доставленных до конца обещанного интервала.'],
+    ['Заказов за день',fmt.format(orders.length),'Синтетическая история','Воспроизведение одного дня на сгенерированных заказах. Все стратегии получают одинаковые заказы в одинаковое время.']
+  ];
+  $('kpis').innerHTML=cards.map(([title,value,sub,help])=>'<article class="kpi"><div class="metricLabel"><span>'+title+'</span>'+tip(title,help)+'</div><strong>'+value+'</strong><small>'+sub+'</small></article>').join('');
+  const keys=Object.keys(strategies);
+  const unitPrice=(result,type)=>result[type]?money(result.spend[type]/result[type]):'—';
+  const share=(r,type)=>pct(r[type]/r.visits.length*100)+' · '+fmt.format(r[type]);
+  const rows=[
+    ['Пешие доставки · доля и заказы',r=>share(r,'walk')],
+    ['Автодоставки · доля и заказы',r=>share(r,'auto')],
+    ['Цена пешей доставки',r=>unitPrice(r,'walk'),'Средняя цена пешей доставки на заказ. Затраты на пешие рейсы делятся на число заказов, доставленных пешком.'],
+    ['Цена автодоставки',r=>unitPrice(r,'auto'),'Средняя цена автодоставки на заказ. При большем числе заказов в авторейсе стартовая стоимость распределяется между ними.'],
+    ['Всего рейсов',r=>fmt.format(r.routes.length)],
+    ['Заказов на рейс',r=>(r.visits.length/r.routes.length).toFixed(2).replace('.',','),'Сколько заказов в среднем курьер доставляет за один выезд со склада.'],
+    ['Средний вес рейса',r=>(r.routes.reduce((sum,route)=>sum+route.weight,0)/r.routes.length).toFixed(1).replace('.',',')+' кг'],
+    ['В обещанное окно',r=>pct(r.onTime)],
+    ['Средняя стоимость доставки на заказ',r=>money(r.cost/r.visits.length)],
+    ['Расходы за месяц · оценка',r=>money(monthly(r,volume)),'Средняя стоимость доставки в выбранный день, умноженная на месячный объём.'],
+    ['Экономия за месяц · оценка',r=>savings(monthly(base,volume)-monthly(r,volume)),'Расходы диспетчера за месяц минус расходы алгоритма. При росте затрат в ячейке указан перерасход.']
+  ];
+  const focus=document.activeElement?.dataset.scenario;
+  $('compare').innerHTML='<thead><tr><th scope="col">Показатель</th>'+keys.map(k=>'<th scope="col" data-current="'+(k===mode)+'"><div class="algoHeader"><button data-scenario="'+k+'" aria-pressed="'+(k===mode)+'">'+strategies[k].name+'</button>'+tip(strategies[k].name,strategies[k].detail)+'</div></th>').join('')+'</tr></thead><tbody>'+
+    rows.map(([label,show,help])=>'<tr><th scope="row"><div class="tableLabel"><span>'+label+'</span>'+(help?tip(label,help):'')+'</div></th>'+keys.map(k=>'<td data-current="'+(k===mode)+'">'+show(results[k])+'</td>').join('')+'</tr>').join('')+'</tbody>';
+  if(focus) $('compare').querySelector('[data-scenario="'+focus+'"]')?.focus({preventScroll:true});
+}
+function stop(){clearInterval(timer);timer=null;$('play').textContent='▶ Проиграть';}
+function run(){
+  stop();
+  orders=history(Number($('day').value));
+  const base=simulate(orders,'base');
+  const costs=calibrateCosts(base);
+  results={base};
+  for(const key of Object.keys(strategies).slice(1)) results[key]=simulate(orders,key,costs);
+  priceRoutes(results,costs);
+  end=Math.max(...Object.values(results).flatMap(r=>r.routes.map(route=>route.back)));
+  $('time').max=end;
+  time=end;
+  selected=results[mode].routes.find(r=>r.visits.length>1)?.id;
+  metrics();render();
+  $('status').textContent='День пересчитан. Всего заказов: '+orders.length;
+}
+function render(){
+  $('time').value=time;
+  $('clock').textContent=clock(time);
+  $('algorithm').value=mode;
+  const sample=results[mode];
+  const routes=sample.routes.filter(r=>r.depart<=time);
+  const delivered=routes.flatMap(r=>r.visits).filter(v=>v.time<=time);
+  const placed=orders.filter(o=>o.placed<=time);
+  $('mapInfo').textContent='Заказов поступило '+placed.length+' из '+orders.length;
+  $('count').textContent=routes.length+' / '+sample.routes.length;
+  $('modeLabel').textContent=strategies[mode].summary??strategies[mode].detail.split('.')[0];
+  $('routeSummary').textContent='Доставлено '+delivered.length+' · в пути '+(routes.flatMap(r=>r.visits).length-delivered.length)+' · ожидают '+(placed.length-routes.flatMap(r=>r.visits).length);
+  const activeRoute=routes.find(r=>r.id===selected);
+  const focused=document.activeElement?.dataset.route;
+  $('routeList').innerHTML=routes.slice().reverse().map(r=>'<button class="route" data-route="'+r.id+'" aria-pressed="'+(r.id===selected)+'"><span><i class="dot '+r.mode+'"></i><b>'+r.visits[0].order.zone+'</b><small>'+clock(r.depart)+' · '+types[r.mode].label+' · заказов: '+r.visits.length+'</small></span><b>'+money(r.cost)+'</b></button>').join('')||'<div class="sub">Рейсы появятся после сборки заказов.</div>';
+  if(focused) $('routeList').querySelector('[data-route="'+focused+'"]')?.focus({preventScroll:true});
+  $('detail').innerHTML=activeRoute?'<p><strong>Рейс '+activeRoute.id+' · курьер '+activeRoute.courier+'</strong> · выезд '+clock(activeRoute.depart)+'</p><ul>'+activeRoute.visits.map(v=>'<li>№'+v.order.id+' · '+v.order.weight+' кг · заказ '+clock(v.order.placed)+' · доставка '+clock(v.time)+(v.time>activeRoute.depart&&v.time>time?' (по модели)':'')+' · окно '+clock(v.order.start)+'–'+clock(v.order.end)+(v.time>v.order.end?' · опоздание':'')+'</li>').join('')+'</ul>':'Выберите рейс, чтобы увидеть порядок остановок и окна доставки.';
+  const active=routes.filter(r=>r.back>time);
+  displayedRoutes=[...(active.length?active:routes).filter(r=>r!==activeRoute).slice(-15),...(activeRoute?[activeRoute]:[])];
+  const dispatched=new Set(routes.flatMap(r=>r.visits.map(v=>v.order.id)));
+  draw(displayedRoutes,placed.filter(o=>!dispatched.has(o.id)),activeRoute);
+}
+function draw(routes,placed,activeRoute){
+  const canvas=$('map'), {width,height}=canvas.getBoundingClientRect();
+  if(!width||!height)return;
+  const pixel=Math.min(devicePixelRatio||1,2);
+  canvas.width=width*pixel;canvas.height=height*pixel;
+  const ctx=canvas.getContext('2d');
+  ctx.scale(pixel,pixel);
+  const X=x=>x*width/100, Y=y=>y*height/100;
+  function line(nodes,color,size,smooth=false){
+    ctx.beginPath();ctx.moveTo(X(nodes[0][0]),Y(nodes[0][1]));
+    for(let i=1;i<nodes.length;i++){
+      const [x,y]=nodes[i];
+      if(smooth&&i<nodes.length-1)ctx.quadraticCurveTo(X(x),Y(y),X((x+nodes[i+1][0])/2),Y((y+nodes[i+1][1])/2));
+      else ctx.lineTo(X(x),Y(y));
+    }
+    ctx.strokeStyle=color;ctx.lineWidth=size;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+  }
+  function marker(x,y,r,color){
+    ctx.beginPath();ctx.arc(X(x),Y(y),r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+  }
+  ctx.fillStyle='#e9efe6';ctx.fillRect(0,0,width,height);
+  const blocks=[
+    [[0,0],[32,0],[22,19],[0,25]],[[67,0],[99,0],[100,16],[85,23],[76,15]],
+    [[14,69],[28,68],[33,79],[22,90],[9,88]],[[42,73],[49,77],[51,90],[44,99],[36,88]],
+    [[79,71],[91,73],[96,85],[84,87]],[[0,53],[14,50],[17,57],[10,65],[0,63]]
+  ];
+  for(const polygon of blocks){
+    ctx.beginPath();ctx.moveTo(X(polygon[0][0]),Y(polygon[0][1]));
+    for(const [x,y] of polygon.slice(1))ctx.lineTo(X(x),Y(y));
+    ctx.closePath();ctx.fillStyle='#d5e6cf';ctx.fill();
+  }
+  const streets=[
+    [[-4,10],[17,20],[27,23],[36,31],[47,43],[51,47]],
+    [[28,-2],[33,12],[42,25],[47,39],[50,49]],
+    [[50,-3],[51,13],[52,29],[55,39],[55,51]],
+    [[74,-3],[69,12],[64,27],[63,35],[58,44],[56,52]],
+    [[94,4],[86,16],[78,25],[68,35],[59,46],[55,51]],
+    [[102,27],[89,29],[80,32],[73,39],[64,47],[58,52]],
+    [[103,49],[91,49],[78,48],[68,49],[60,56]],
+    [[103,66],[87,65],[78,64],[69,68],[60,66],[55,62]],
+    [[99,95],[86,87],[76,80],[70,73],[62,68]],
+    [[64,103],[64,91],[63,82],[59,74],[55,65],[55,58]],
+    [[45,103],[46,89],[48,78],[51,69],[53,63],[54,57]],
+    [[28,103],[33,89],[40,77],[45,70],[49,64],[52,57]],
+    [[-2,83],[16,83],[28,79],[39,72],[47,64],[52,57]],
+    [[-2,54],[10,52],[23,53],[35,54],[44,55],[50,54]],
+    [[-2,38],[15,35],[25,38],[35,43],[42,48],[50,53]]
+  ];
+  const rings=[
+    [[39,49],[40,41],[47,35],[56,35],[64,40],[68,49],[69,58],[64,68],[56,71],[47,69],[40,62],[38,55],[39,49],[40,41]],
+    [[23,47],[24,34],[33,24],[45,18],[59,18],[73,24],[84,37],[88,51],[84,66],[75,81],[61,89],[44,91],[29,84],[19,72],[19,60],[23,47],[24,34]]
+  ];
+  const localStreets=[
+    [[4,26],[14,28],[24,33],[36,37],[43,39]],[[7,31],[18,32],[28,37],[37,42]],[[14,21],[12,30],[14,37],[19,44]],[[21,19],[23,28],[27,38],[31,43]],
+    [[24,13],[31,16],[40,19],[45,24],[54,25]],[[32,8],[39,8],[46,10],[54,12],[62,11]],[[40,7],[42,17],[44,26],[45,35]],[[46,12],[48,22],[50,29],[51,37]],
+    [[55,17],[59,20],[63,24],[71,27],[77,29]],[[69,17],[72,23],[76,28],[80,35]],[[78,12],[83,18],[89,23],[98,22]],[[87,9],[91,16],[97,19]],
+    [[44,34],[46,42],[48,47],[52,49]],[[59,31],[59,39],[61,43],[65,46]],[[53,33],[59,34],[65,36],[71,41]],[[67,34],[71,37],[76,39],[80,45],[86,46]],
+    [[78,36],[85,37],[92,39],[100,38]],[[86,32],[88,40],[92,48],[93,57],[100,61]],[[77,44],[80,53],[85,57],[95,58]],
+    [[5,46],[18,46],[24,49],[31,48],[36,46]],[[17,40],[20,49],[22,56],[27,62]],[[20,60],[24,57],[29,55],[34,52]],[[23,41],[29,43],[34,46],[40,47]],
+    [[34,56],[40,57],[44,60],[48,62]],[[31,62],[38,64],[42,68],[45,74]],[[26,76],[32,74],[39,76],[44,79]],[[34,71],[36,77],[40,84],[43,90]],
+    [[49,71],[53,74],[55,80],[60,85]],[[53,70],[57,70],[60,74],[63,81]],[[57,73],[59,78],[61,84],[61,94]],[[48,84],[54,87],[57,92],[66,95]],
+    [[73,52],[76,57],[78,65],[82,71]],[[69,62],[76,61],[82,64],[89,63],[98,68]],[[70,70],[75,73],[82,77],[94,77]],[[79,64],[81,72],[84,79],[88,84]],[[80,85],[87,90],[96,94]]
+  ];
+  for(const points of localStreets)line(points,'#f9fcf7',1.4,true);
+  for(const points of [...streets,...rings]){
+    const ring=rings.includes(points);
+    line(points,'#d6ddd3',ring?9:6,true);
+    line(points,ring?'#fff8e9':'#fbfdf8',ring?6:4,true);
+  }
+  const river=[[-4,39],[8,43],[13,52],[11,60],[16,70],[25,72],[32,67],[32,56],[37,50],[43,51],[48,56],[54,59],[62,54],[68,58],[66,68],[63,74],[70,80],[76,86],[77,96],[86,104]];
+  const riverWidth=Math.max(8,Math.min(17,width*.021));
+  line(river,'#f1fbfa',riverWidth+5,true);
+  line(river,'#accfd8',riverWidth,true);
+  const canal=[[47,59],[51,64],[56,65],[62,61],[66,58]];
+  line(canal,'#b6d5db',4,true);
+  for(const bridge of [[[25,65],[28,74]],[[35,53],[40,54]],[[49,53],[47,62]],[[56,54],[56,65]],[[65,57],[72,59]],[[64,74],[69,70]],[[72,86],[79,83]]]){
+    line(bridge,'#d1d9d0',5);
+    line(bridge,'#fcf9ef',3);
+  }
+  ctx.fillStyle='#648a94';ctx.font='italic 11px system-ui';
+  ctx.save();ctx.translate(X(14),Y(75));ctx.rotate(.13);ctx.fillText('Москва-река',0,0);ctx.restore();
+  function mapText(text,x,y,color='#586e60',size=11){
+    ctx.textAlign='center';
+    ctx.font='600 '+size+'px system-ui';
+    ctx.lineWidth=3;
+    ctx.strokeStyle='#edf4ea';
+    ctx.strokeText(text,X(x),Y(y));
+    ctx.fillStyle=color;
+    ctx.fillText(text,X(x),Y(y));
+  }
+  const isNarrow=width<520;
+  for(const z of zones){
+    if(isNarrow&&['Мещанский','Замоскворечье','Арбат'].includes(z.name))continue;
+    mapText(z.name,z.x,z.y-4,'#53695c',isNarrow?9:11);
+  }
+  mapText('Кремль',53,47,'#80664a',isNarrow?9:10);
+  if(!isNarrow){
+    mapText('Садовое кольцо',62,32,'#8a734e',10);
+    mapText('ТТК',89,44,'#8a734e',10);
+    mapText('Парк Горького',39,83,'#55795d',10);
+    mapText('Сокольники · парк',90,12,'#55795d',10);
+    mapText('Москва-Сити',24,46,'#567277',10);
+    mapText('Новый Арбат',36,51,'#657466',9);
+    mapText('Крымский мост',47,72,'#657466',9);
+  }
+  for(const o of placed)marker(o.x,o.y,3.5,'#7c8176');
+  for(const r of [...routes.filter(r=>r!==activeRoute),...(activeRoute?[activeRoute]:[])]){
+    const color=r.mode==='walk'?'#287956':'#b46643';
+    const points=[[hub.x,hub.y],...r.visits.map(v=>[v.order.x,v.order.y])];
+    const chosen=r===activeRoute;
+    ctx.globalAlpha=chosen?1:activeRoute ? .27 : .58;
+    if(chosen)line(points,'#fff',7);
+    line(points,color,chosen?3.5:1.6);
+    for(const [i,v] of r.visits.entries()){
+      marker(v.order.x,v.order.y,chosen?8:3.5,'white');
+      marker(v.order.x,v.order.y,chosen?6.5:2.8,color);
+      if(chosen){ctx.font='bold 9px system-ui';ctx.fillStyle='white';ctx.textAlign='center';ctx.fillText(i+1,X(v.order.x),Y(v.order.y)+3);}
+    }
+    ctx.globalAlpha=1;
+  }
+  marker(hub.x,hub.y,9,'white');marker(hub.x,hub.y,6,'#213e2f');
+  ctx.textAlign='left';ctx.font='bold 11px system-ui';ctx.strokeStyle='#f8fbf6';ctx.lineWidth=3;ctx.strokeText('Склад',X(hub.x)+12,Y(hub.y)-2);ctx.fillStyle='#213e2f';ctx.fillText('Склад',X(hub.x)+12,Y(hub.y)-2);
+}
+$('algorithm').innerHTML=Object.entries(strategies).map(([key,item])=>'<option value="'+key+'">'+item.name+'</option>').join('');
+function changeAlgorithm(key){
+  stop();
+  mode=key;
+  selected=results[mode].routes.findLast(r=>r.depart<=time&&r.visits.length>1)?.id;
+  metrics();render();
+}
+$('algorithm').onchange=()=>changeAlgorithm($('algorithm').value);
+$('compare').onclick=e=>{
+  const button=e.target.closest('[data-scenario]');
+  if(button) changeAlgorithm(button.dataset.scenario);
+};
+$('run').onclick=run;
+$('day').onchange=run;
+$('month').onchange=()=>{hideTip();metrics();};
+$('time').oninput=()=>{stop();time=Number($('time').value);render();};
+$('play').onclick=()=>{
+  if(timer){stop();return;}
+  if(time===end){time=0;selected=null;}
+  $('play').textContent='Ⅱ Пауза';
+  render();
+  timer=setInterval(()=>{time=Math.min(end,time+12);if(time===end)stop();render();},145);
+};
+$('routeList').onclick=e=>{
+  const button=e.target.closest('[data-route]');
+  if(button){selected=Number(button.dataset.route);render();}
+};
+$('map').onclick=e=>{
+  const box=e.currentTarget.getBoundingClientRect();
+  const x=e.clientX-box.left,y=e.clientY-box.top;
+  const hit=displayedRoutes.slice().reverse().find(r=>r.visits.some(v=>Math.hypot(v.order.x*box.width/100-x,v.order.y*box.height/100-y)<12));
+  if(hit){selected=hit.id;render();$('routeList').querySelector('[aria-pressed=true]')?.scrollIntoView({block:'nearest'});}
+};
+let tipAnchor;
+function hideTip(){
+  tipAnchor?.removeAttribute('aria-describedby');
+  tipAnchor=null;
+  $('tipPopup').hidden=true;
+}
+function showTip(button){
+  if(!button)return;
+  hideTip();
+  tipAnchor=button;
+  const popup=$('tipPopup');
+  popup.textContent=button.dataset.tip;
+  popup.hidden=false;
+  button.setAttribute('aria-describedby','tipPopup');
+  const box=button.getBoundingClientRect();
+  const left=box.left+(box.width-popup.offsetWidth)/2;
+  popup.style.left=Math.max(12,Math.min(left,innerWidth-popup.offsetWidth-12))+'px';
+  popup.style.top=(box.bottom+popup.offsetHeight+8<innerHeight?box.bottom+7:Math.max(8,box.top-popup.offsetHeight-7))+'px';
+}
+const tourSteps=[
+  {target:'kpis',title:'Сколько можно сэкономить',copy:'Здесь оценка эффекта за месяц. По умолчанию расчёт сделан на 19 000 заказов. Объём можно поменять в таблице сравнения.'},
+  {target:'algorithm',title:'Как меняются рейсы',copy:'Выберите диспетчера или один из трёх алгоритмов. Проиграйте день по шкале времени и нажмите на рейс, чтобы увидеть остановки, вес и окна.'},
+  {target:'comparison',title:'Чем различаются алгоритмы',copy:'Сравните долю пеших и автодоставок, число рейсов, вес и расходы на одном дне заказов. Значок i объясняет показатели.'}
+];
+let tourStep=0, tourTarget;
+function renderTour(scroll){
+  const step=tourSteps[tourStep];
+  tourTarget?.classList.remove('tourFocus');
+  tourTarget=$(step.target);
+  tourTarget.classList.add('tourFocus');
+  $('tour').hidden=false;
+  $('tourProgress').textContent=(tourStep+1)+' из '+tourSteps.length;
+  $('tourTitle').textContent=step.title;
+  $('tourCopy').textContent=step.copy;
+  $('tourNext').textContent=tourStep===tourSteps.length-1?'Готово':'Далее';
+  if(scroll)tourTarget.scrollIntoView({block:'start'});
+}
+function finishTour(restoreFocus){
+  tourTarget?.classList.remove('tourFocus');
+  $('tour').hidden=true;
+  try{localStorage.setItem('ecomarket-demo-tour-v1','seen');}catch{}
+  if(restoreFocus)$('startTour').focus({preventScroll:true});
+}
+$('startTour').onclick=()=>{tourStep=0;renderTour(true);$('tourNext').focus({preventScroll:true});};
+$('tourSkip').onclick=()=>finishTour(true);
+$('tourNext').onclick=()=>{
+  if(tourStep+1===tourSteps.length){finishTour(true);return;}
+  tourStep++;
+  renderTour(true);
+};
+document.addEventListener('pointerover',event=>{const button=event.target.closest('.tip');if(button)showTip(button);});
+document.addEventListener('pointerout',event=>{if(event.target===tipAnchor&&document.activeElement!==tipAnchor)hideTip();});
+document.addEventListener('focusin',event=>{const button=event.target.closest('.tip');if(button)showTip(button);});
+document.addEventListener('focusout',event=>{if(event.target===tipAnchor)hideTip();});
+document.addEventListener('click',event=>{const button=event.target.closest('.tip');if(button)showTip(button);else hideTip();});
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'){
+    if(tipAnchor)hideTip();
+    else if(!$('tour').hidden)finishTour(true);
+  }
+});
+document.addEventListener('scroll',hideTip,true);
+window.addEventListener('resize',()=>{hideTip();render();});
+run();
+let seenTour=false;
+try{seenTour=localStorage.getItem('ecomarket-demo-tour-v1')==='seen';}catch{}
+if(!seenTour)renderTour(false);
+</script>
+</body>
+</html>
