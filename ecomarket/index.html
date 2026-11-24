@@ -76,7 +76,7 @@ nav{align-items:center}nav button{padding:5px 9px;font-size:13px}
 'use strict';
 const $ = id => document.getElementById(id);
 const hub = {x:50,y:53};
-const mapWarehouse = {x:77,y:91};
+const mapWarehouse = {x:83,y:91};
 const strategies = {
   base:{name:'Диспетчер',detail:'Модель ручного распределения. Диспетчер быстро отправляет готовые заказы, объединяя до двух в одном районе.',wait:0,max:2},
   windows:{name:'1 · Точно в окно',summary:'Алгоритм ставит в приоритет попадания во временное окно',detail:'Приоритет запаса до конца окна. Стратегия сравнивает порядок остановок и время до дедлайна.',wait:0,max:3},
