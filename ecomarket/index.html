@@ -40,6 +40,7 @@ nav{align-items:center}nav button{padding:5px 9px;font-size:13px}
 .tour h2{font-size:19px;margin:4px 0 5px}.tour p{color:var(--muted);font-size:14px;margin:0 0 12px}.tourActions{display:flex;justify-content:space-between;align-items:center;gap:8px}.tourActions button{padding:7px 9px;font-size:13px}.tourProgress{color:var(--green);font-size:12px;font-weight:700}
 .comparison tbody tr:last-child{font-weight:740}.comparison [data-current="true"]{background:#e9f4e8}.comparison .bar{align-items:center}.monthControl{font-size:13px;font-weight:650;color:var(--muted);display:grid;gap:3px}.monthControl select{padding:6px 9px;font-size:14px}
 @media(max-width:520px){header .brand{font-size:17px}nav{gap:8px}.tour{right:12px;bottom:12px;width:calc(100vw - 24px)}}
+.routeAlgorithm{display:grid;gap:3px;margin:0;padding:10px 16px;border-bottom:1px solid var(--line);color:var(--muted);font-size:13px;font-weight:650}.routeAlgorithm select{width:100%;min-width:0;padding:6px 8px;font-size:14px}
 </style>
 </head>
 <body>
@@ -52,7 +53,7 @@ nav{align-items:center}nav button{padding:5px 9px;font-size:13px}
 <div class="card"><div class="bar"><div><h2>Карта маршрутов</h2><div class="sub" id="mapInfo"></div></div><label class="algorithmSelect">Алгоритм распределения<select id="algorithm"></select></label></div>
 <div class="map"><canvas id="map" role="img" aria-label="Схема рейсов по Москве. Выбрать рейс можно в списке."></canvas><span class="mapCompass" aria-hidden="true">С</span><div class="mapLabel">Центр Москвы · схема</div><div class="legend"><span><i class="dot"></i>Пешком</span><span><i class="dot auto"></i>На авто</span><span><i class="dot pending"></i>Ожидают</span></div></div>
 <div class="timeline"><button id="play">▶ Проиграть</button><input id="time" aria-label="Время симуляции" type="range" min="0" max="960" value="960"><time id="clock"></time></div></div>
-<aside class="card side"><div class="bar"><div><h2>Рейсы дня</h2><div class="sub" id="modeLabel"></div></div><strong id="count"></strong></div><div class="sideSummary" id="routeSummary"></div><div class="routeList" id="routeList" role="group" aria-label="Выбор рейса"></div><div class="detail" id="detail"></div></aside>
+<aside class="card side"><div class="bar"><div><h2>Рейсы дня</h2><div class="sub" id="modeLabel"></div></div><strong id="count"></strong></div><label class="routeAlgorithm">Алгоритм распределения<select id="routeAlgorithm"></select></label><div class="sideSummary" id="routeSummary"></div><div class="routeList" id="routeList" role="group" aria-label="Выбор рейса"></div><div class="detail" id="detail"></div></aside>
 </section>
 <section class="card comparison" id="comparison"><div class="bar"><div><h2>Сравнение алгоритмов</h2><div class="sub">Нажмите на алгоритм, чтобы увидеть его рейсы. Оценка за месяц основана на средней стоимости заказа в выбранный день.</div></div><label class="monthControl" id="monthControl">Заказов в месяц<select id="month"><option value="18000">18 000</option><option value="19000" selected>19 000</option><option value="20000">20 000</option></select></label></div><div class="tableScroll" tabindex="0" role="region" aria-label="Таблица сравнения алгоритмов, прокручивается по горизонтали"><table id="compare"></table></div></section>
 <div class="status" id="status" aria-live="polite"></div>
@@ -275,7 +276,7 @@ function run(){
 function render(){
   $('time').value=time;
   $('clock').textContent=clock(time);
-  $('algorithm').value=mode;
+  for(const id of algorithmSelects) $(id).value=mode;
   const sample=results[mode];
   const routes=sample.routes.filter(r=>r.depart<=time);
   const delivered=routes.flatMap(r=>r.visits).filter(v=>v.time<=time);
@@ -417,14 +418,19 @@ function draw(routes,placed,activeRoute){
   marker(hub.x,hub.y,9,'white');marker(hub.x,hub.y,6,'#213e2f');
   ctx.textAlign='left';ctx.font='bold 11px system-ui';ctx.strokeStyle='#f8fbf6';ctx.lineWidth=3;ctx.strokeText('Склад',X(hub.x)+12,Y(hub.y)-2);ctx.fillStyle='#213e2f';ctx.fillText('Склад',X(hub.x)+12,Y(hub.y)-2);
 }
-$('algorithm').innerHTML=Object.entries(strategies).map(([key,item])=>'<option value="'+key+'">'+item.name+'</option>').join('');
+const algorithmSelects=['algorithm','routeAlgorithm'];
+const algorithmOptions=Object.entries(strategies).map(([key,item])=>'<option value="'+key+'">'+item.name+'</option>').join('');
 function changeAlgorithm(key){
   stop();
   mode=key;
   selected=results[mode].routes.findLast(r=>r.depart<=time&&r.visits.length>1)?.id;
   metrics();render();
 }
-$('algorithm').onchange=()=>changeAlgorithm($('algorithm').value);
+for(const id of algorithmSelects){
+  const select=$(id);
+  select.innerHTML=algorithmOptions;
+  select.onchange=()=>changeAlgorithm(select.value);
+}
 $('compare').onclick=e=>{
   const button=e.target.closest('[data-scenario]');
   if(button) changeAlgorithm(button.dataset.scenario);
