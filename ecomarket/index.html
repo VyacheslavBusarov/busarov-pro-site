@@ -50,7 +50,7 @@ nav{align-items:center}nav button{padding:5px 9px;font-size:13px}
 <section class="kpis" id="kpis" aria-label="Итоги дня"></section>
 <section class="workspace" aria-label="Маршруты и воспроизведение">
 <div class="card"><div class="bar"><div><h2>Карта маршрутов</h2><div class="sub" id="mapInfo"></div></div><label class="algorithmSelect">Алгоритм распределения<select id="algorithm"></select></label></div>
-<div class="map"><canvas id="map" role="img" aria-label="Схема рейсов по Москве. Выбрать рейс можно в списке."></canvas><span class="mapCompass" aria-hidden="true">С</span><div class="mapLabel">Центр Москвы · схема</div><div class="legend"><span><i class="dot"></i>Пешком</span><span><i class="dot auto"></i>На авто</span><span><i class="dot pending"></i>Ожидают</span></div></div>
+<div class="map"><canvas id="map" role="img" aria-label="Схема рейсов по Москве со складом южнее МКАД. Выбрать рейс можно в списке."></canvas><span class="mapCompass" aria-hidden="true">С</span><div class="mapLabel">Москва и юг за МКАД · схема</div><div class="legend"><span><i class="dot"></i>Пешком</span><span><i class="dot auto"></i>На авто</span><span><i class="dot pending"></i>Ожидают</span></div></div>
 <div class="timeline"><button id="play">▶ Проиграть</button><input id="time" aria-label="Время симуляции" type="range" min="0" max="960" value="960"><time id="clock"></time></div></div>
 <aside class="card side"><div class="bar"><div><h2>Рейсы дня</h2><div class="sub" id="modeLabel"></div></div><strong id="count"></strong></div><label class="routeAlgorithm">Алгоритм распределения<select id="routeAlgorithm"></select></label><div class="sideSummary" id="routeSummary"></div><div class="routeList" id="routeList" role="group" aria-label="Выбор рейса"></div><div class="detail" id="detail"></div></aside>
 </section>
@@ -61,7 +61,7 @@ nav{align-items:center}nav button{padding:5px 9px;font-size:13px}
 <ul><li>Прогноз за месяц переносит среднюю стоимость заказа выбранного дня на указанный месячный объём. Диспетчер и три алгоритма получают одинаковые заказы по мере поступления. У каждого заказа есть район, время оформления, готовность после сборки, вес и окно доставки. Курьер доступен для следующего рейса после возвращения на склад.</li>
 <li>Диспетчер — модель ручного процесса. Она объединяет уже собранные заказы одного района, выезжает при первой возможности и фиксирует состав рейса. В демо она чаще назначает авто.</li>
 <li>«Точно в окно» выбирает рейс с запасом до конца окна. «Больше заказов» ждёт до 12 минут ради совместимой доставки и собирает до четырёх стопов. Алгоритм «Не перегружать курьеров» ограничивает вес до 8 кг для пешего курьера и до 22 кг для автокурьера. Тяжёлый заказ, который превышает мягкий лимит, отправляется отдельно, в пределах общего лимита транспорта.</li>
-<li>Базовые средние цены по диспетчеру взяты из разговора: 590 ₽ за пешую доставку и 760 ₽ за автодоставку. В демо у каждого рейса есть стартовая стоимость и доплата за каждую следующую остановку: 390 ₽ пешком и 470 ₽ на авто. Это модельные доплаты. Стартовую стоимость рассчитываем по рейсам диспетчера так, чтобы его средние цены совпадали с 590 ₽ и 760 ₽. Тот же тариф применяем ко всем алгоритмам. При объединении заказов стоимость выезда делится между доставками, поэтому средняя цена на заказ меняется. Месячную экономию считаем как расходы диспетчера минус расходы алгоритма при выбранном объёме. Время в пути приближённое, с поправкой на часы пик. На карте показана последовательность остановок по условным адресам.</li>
+<li>Базовые средние цены по диспетчеру взяты из разговора: 590 ₽ за пешую доставку и 760 ₽ за автодоставку. В демо у каждого рейса есть стартовая стоимость и доплата за каждую следующую остановку: 390 ₽ пешком и 470 ₽ на авто. Это модельные доплаты. Стартовую стоимость рассчитываем по рейсам диспетчера так, чтобы его средние цены совпадали с 590 ₽ и 760 ₽. Тот же тариф применяем ко всем алгоритмам. При объединении заказов стоимость выезда делится между доставками, поэтому средняя цена на заказ меняется. Месячную экономию считаем как расходы диспетчера минус расходы алгоритма при выбранном объёме. Время в пути приближённое, с поправкой на часы пик. На карте показана последовательность остановок по условным адресам. Положение склада южнее МКАД схематическое. Время и расстояния рассчитываются на условных данных симулятора.</li>
 </ul><p>Для проверки на данных Экомаркета понадобятся история заказов с окнами и временем сборки, фактические рейсы и отметки доставки, смены курьеров, тарифы и расчёт времени в пути по дорожной сети.</p></details>
 
 </section>
@@ -76,6 +76,8 @@ nav{align-items:center}nav button{padding:5px 9px;font-size:13px}
 'use strict';
 const $ = id => document.getElementById(id);
 const hub = {x:50,y:53};
+const mapWarehouse = {x:64,y:119};
+const mapSouth = 140;
 const strategies = {
   base:{name:'Диспетчер',detail:'Модель ручного распределения. Диспетчер быстро отправляет готовые заказы, объединяя до двух в одном районе.',wait:0,max:2},
   windows:{name:'1 · Точно в окно',summary:'Алгоритм ставит в приоритет попадания во временное окно',detail:'Приоритет запаса до конца окна. Стратегия сравнивает порядок остановок и время до дедлайна.',wait:0,max:3},
@@ -301,7 +303,7 @@ function draw(routes,placed,activeRoute){
   canvas.width=width*pixel;canvas.height=height*pixel;
   const ctx=canvas.getContext('2d');
   ctx.scale(pixel,pixel);
-  const X=x=>x*width/100, Y=y=>y*height/100;
+  const X=x=>x*width/100, Y=y=>y*height/mapSouth;
   function line(nodes,color,size,smooth=false){
     ctx.beginPath();ctx.moveTo(X(nodes[0][0]),Y(nodes[0][1]));
     for(let i=1;i<nodes.length;i++){
@@ -340,7 +342,9 @@ function draw(routes,placed,activeRoute){
     [[28,103],[33,89],[40,77],[45,70],[49,64],[52,57]],
     [[-2,83],[16,83],[28,79],[39,72],[47,64],[52,57]],
     [[-2,54],[10,52],[23,53],[35,54],[44,55],[50,54]],
-    [[-2,38],[15,35],[25,38],[35,43],[42,48],[50,53]]
+    [[-2,38],[15,35],[25,38],[35,43],[42,48],[50,53]],
+    [[45,103],[46,112],[49,123],[49,143]],[[64,103],[62,110],[64,119],[69,142]],
+    [[14,86],[20,99],[22,112],[21,129],[18,142]],[[80,87],[83,102],[84,114],[89,132],[92,142]]
   ];
   const rings=[
     [[39,49],[40,41],[47,35],[56,35],[64,40],[68,49],[69,58],[64,68],[56,71],[47,69],[40,62],[38,55],[39,49],[40,41]],
@@ -363,7 +367,10 @@ function draw(routes,placed,activeRoute){
     line(points,'#d6ddd3',ring?9:6,true);
     line(points,ring?'#fff8e9':'#fbfdf8',ring?6:4,true);
   }
-  const river=[[-4,39],[8,43],[13,52],[11,60],[16,70],[25,72],[32,67],[32,56],[37,50],[43,51],[48,56],[54,59],[62,54],[68,58],[66,68],[63,74],[70,80],[76,86],[77,96],[86,104]];
+  const mkad=[[0,62],[7,77],[14,91],[22,102],[36,110],[51,113],[66,111],[79,105],[91,94],[102,81]];
+  line(mkad,'#d0b672',7,true);
+  line(mkad,'#fff0be',4.5,true);
+  const river=[[-4,39],[8,43],[13,52],[11,60],[16,70],[25,72],[32,67],[32,56],[37,50],[43,51],[48,56],[54,59],[62,54],[68,58],[66,68],[63,74],[70,80],[76,86],[77,96],[86,104],[91,108],[104,105]];
   const riverWidth=Math.max(8,Math.min(17,width*.021));
   line(river,'#f1fbfa',riverWidth+5,true);
   line(river,'#accfd8',riverWidth,true);
@@ -389,6 +396,7 @@ function draw(routes,placed,activeRoute){
     if(isNarrow&&['Мещанский','Замоскворечье','Арбат'].includes(z.name))continue;
     mapText(z.name,z.x,z.y-4,'#53695c',isNarrow?9:11);
   }
+  mapText('МКАД',38,106,'#80664a',11);
   mapText('Кремль',53,47,'#80664a',isNarrow?9:10);
   if(!isNarrow){
     mapText('Садовое кольцо',62,32,'#8a734e',10);
@@ -402,7 +410,7 @@ function draw(routes,placed,activeRoute){
   for(const o of placed)marker(o.x,o.y,3.5,'#7c8176');
   for(const r of [...routes.filter(r=>r!==activeRoute),...(activeRoute?[activeRoute]:[])]){
     const color=r.mode==='walk'?'#287956':'#b46643';
-    const points=[[hub.x,hub.y],...r.visits.map(v=>[v.order.x,v.order.y])];
+    const points=[[mapWarehouse.x,mapWarehouse.y],...r.visits.map(v=>[v.order.x,v.order.y])];
     const chosen=r===activeRoute;
     ctx.globalAlpha=chosen?1:activeRoute ? .27 : .58;
     if(chosen)line(points,'#fff',7);
@@ -414,8 +422,8 @@ function draw(routes,placed,activeRoute){
     }
     ctx.globalAlpha=1;
   }
-  marker(hub.x,hub.y,9,'white');marker(hub.x,hub.y,6,'#213e2f');
-  ctx.textAlign='left';ctx.font='bold 11px system-ui';ctx.strokeStyle='#f8fbf6';ctx.lineWidth=3;ctx.strokeText('Склад',X(hub.x)+12,Y(hub.y)-2);ctx.fillStyle='#213e2f';ctx.fillText('Склад',X(hub.x)+12,Y(hub.y)-2);
+  marker(mapWarehouse.x,mapWarehouse.y,9,'white');marker(mapWarehouse.x,mapWarehouse.y,6,'#213e2f');
+  ctx.textAlign='left';ctx.font='bold 11px system-ui';ctx.strokeStyle='#f8fbf6';ctx.lineWidth=3;ctx.strokeText('Склад',X(mapWarehouse.x)+12,Y(mapWarehouse.y)-2);ctx.fillStyle='#213e2f';ctx.fillText('Склад',X(mapWarehouse.x)+12,Y(mapWarehouse.y)-2);
 }
 const algorithmSelects=['algorithm','routeAlgorithm'];
 const algorithmOptions=Object.entries(strategies).map(([key,item])=>'<option value="'+key+'">'+item.name+'</option>').join('');
@@ -450,7 +458,7 @@ $('routeList').onclick=e=>{
 $('map').onclick=e=>{
   const box=e.currentTarget.getBoundingClientRect();
   const x=e.clientX-box.left,y=e.clientY-box.top;
-  const hit=displayedRoutes.slice().reverse().find(r=>r.visits.some(v=>Math.hypot(v.order.x*box.width/100-x,v.order.y*box.height/100-y)<12));
+  const hit=displayedRoutes.slice().reverse().find(r=>r.visits.some(v=>Math.hypot(v.order.x*box.width/100-x,v.order.y*box.height/mapSouth-y)<12));
   if(hit){selected=hit.id;render();$('routeList').querySelector('[aria-pressed=true]')?.scrollIntoView({block:'nearest'});}
 };
 let tipAnchor;
